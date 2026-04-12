@@ -18,12 +18,16 @@
 // Does not require disabling SIP.
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <CoreFoundation/CFArray.h>
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFDictionary.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGEvent.h>
 #include <CoreGraphics/CGEventTypes.h>
 #include <float.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 // --- Undocumented CGS/IOKit constants ----------------------------------------
@@ -85,14 +89,77 @@ static bool post_pair(CGEventRef dock) {
     return true;
 }
 
-// Check whether there is a space to switch to in the given direction.
-// Queries the private CGS API for the per-display space list and finds
-// the active space's position within it.
+CFStringRef get_cursor_display_id(void) {
+    CGEventRef tempEvent = CGEventCreate(NULL);
+    CGPoint cursorLocation = CGEventGetLocation(tempEvent);
+    CFRelease(tempEvent);
+    
+    CGDirectDisplayID cursorDisplay = 0;
+    uint32_t cursorDisplayCount = 0;
+    
+    if (CGGetDisplaysWithPoint(cursorLocation, 1, &cursorDisplay, &cursorDisplayCount) == kCGErrorSuccess && cursorDisplayCount > 0) {
+        CFUUIDRef displayUUID = CGDisplayCreateUUIDFromDisplayID(cursorDisplay);
+        if (displayUUID) {
+            return CFUUIDCreateString(NULL, displayUUID);
+            CFRelease(displayUUID);
+        }
+    }
+    return NULL;
+}
+
+CFDictionaryRef get_display_by_id(CFArrayRef displays, CFStringRef id) {
+    const CFIndex displayCount = CFArrayGetCount(displays);
+    for (CFIndex i = 0; i < displayCount; i++) {
+        CFDictionaryRef display = CFArrayGetValueAtIndex(displays, i);
+        CFStringRef displayID = CFDictionaryGetValue(display, CFSTR("Display Identifier"));
+        if (displayID && CFStringCompare(displayID, id, 0) == kCFCompareEqualTo) {
+            return display;
+        }
+    }
+    return NULL;
+}
+
+uint64_t get_active_space_id_for_display(CFDictionaryRef display) {
+    const void *spacesValue = CFDictionaryGetValue(display, CFSTR("Spaces"));
+    if (!spacesValue || CFGetTypeID(spacesValue) != CFArrayGetTypeID()) {
+        return false;
+    }
+
+    // Try to get current space from display dict (more accurate per-display)
+    const void *currentSpaceValue = CFDictionaryGetValue(display, CFSTR("Current Space"));
+    if (currentSpaceValue && CFGetTypeID(currentSpaceValue) == CFDictionaryGetTypeID()) {
+        CFDictionaryRef currentSpaceDict = (CFDictionaryRef)currentSpaceValue;
+        CFNumberRef currentSpaceID = (CFNumberRef)CFDictionaryGetValue(currentSpaceDict, CFSTR("id64"));
+        if (currentSpaceID && CFGetTypeID(currentSpaceID) == CFNumberGetTypeID()) {
+            uint64_t spaceId = 0;
+            CFNumberGetValue(currentSpaceID, kCFNumberSInt64Type, &spaceId);
+            return spaceId;
+        }
+    }
+    return 0;
+}
+
+uint64_t get_active_space_id(CFArrayRef displays) {
+    CFStringRef activeDisplayId = get_cursor_display_id();
+    if (!displays) {
+        return 0;
+    }
+    CFDictionaryRef targetDisplay = get_display_by_id(displays, activeDisplayId);
+    CFRelease(activeDisplayId);
+    if (!targetDisplay) {
+        return 0;
+    }
+    return get_active_space_id_for_display(targetDisplay);
+}
+
 static bool can_switch(bool right) {
     int cid = CGSMainConnectionID();
-    uint64_t active = CGSGetActiveSpace(cid);
     CFArrayRef displays = CGSCopyManagedDisplaySpaces(cid);
     if (!displays) return true;
+    uint64_t active = get_active_space_id(displays);
+    if (!active) {
+        active = CGSGetActiveSpace(cid);
+    }
 
     bool can = true;
     for (CFIndex i = 0; i < CFArrayGetCount(displays); i++) {
@@ -122,7 +189,6 @@ static void post_switch(bool right) {
     double sign = right ? 1.0 : -1.0;
 
     CGEventRef end = make_dock_event(kGestureEnded, right);
-    CGEventSetDoubleValueField(end, kCGEventGestureSwipeProgress, sign * 1.0);
     CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityX, sign * 65.0);
     CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityY, 0);
 
