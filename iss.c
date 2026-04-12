@@ -243,6 +243,7 @@ static CGEventRef cb(CGEventTapProxy proxy, CGEventType type, CGEventRef ev, voi
             if (p != 0.0 && can_switch(right)) {
                 swipeFired = true;
                 post_switch(p > 0);
+                swipeTracking = false;
                 return NULL;
             }
         }
