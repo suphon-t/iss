@@ -19,6 +19,8 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreGraphics/CGEvent.h>
+#include <CoreGraphics/CGEventTypes.h>
 #include <float.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -117,20 +119,14 @@ done:
 }
 
 static void post_switch(bool right) {
-    if (!can_switch(right)) return;
     double sign = right ? 1.0 : -1.0;
 
-    CGEventRef begin = make_dock_event(kGestureBegan, right);
-    if (!begin) return;
-
     CGEventRef end = make_dock_event(kGestureEnded, right);
-    if (!end) { CFRelease(begin); return; }
-    CGEventSetDoubleValueField(end, kCGEventGestureSwipeProgress, sign * 2.0);
-    CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityX, sign * 400.0);
+    CGEventSetDoubleValueField(end, kCGEventGestureSwipeProgress, sign * 1.0);
+    CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityX, sign * 65.0);
     CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityY, 0);
 
-    passthrough += 4; // 2 pairs × 2 events
-    post_pair(begin);
+    passthrough += 2; // 2 pairs × 1 event
     post_pair(end);
 }
 
@@ -165,26 +161,34 @@ static CGEventRef cb(CGEventTapProxy proxy, CGEventType type, CGEventRef ev, voi
         int phase = (int)CGEventGetIntegerValueField(ev, kCGEventGesturePhase);
 
         if (phase == kGestureBegan) {
-            swipeTracking = true; swipeFired = false; return NULL;
+            swipeTracking = true;
+            swipeFired = false;
+            return ev;
         }
-        if (phase == kGestureChanged && swipeTracking) {
-            if (!swipeFired) {
-                double p = CGEventGetDoubleValueField(ev, kCGEventGestureSwipeProgress);
-                if (p != 0.0) { swipeFired = true; post_switch(p > 0); }
+        if (phase == kGestureChanged) {
+            if (swipeFired) {
+                return NULL;
             }
-            return NULL;
+            return ev;
         }
-        if (phase == kGestureEnded && swipeTracking) {
-            if (!swipeFired) {
-                double v = CGEventGetDoubleValueField(ev, kCGEventGestureSwipeVelocityX);
-                if (v != 0.0) post_switch(v > 0);
+        if (phase == kGestureEnded) {
+            double p = CGEventGetDoubleValueField(ev, kCGEventGestureSwipeProgress);
+            bool right = p > 0;
+            if (p != 0.0 && can_switch(right)) {
+                swipeFired = true;
+                post_switch(p > 0);
+                return NULL;
             }
-            swipeTracking = swipeFired = false; return NULL;
         }
-        if (phase == kGestureCancelled) {
-            swipeTracking = swipeFired = false; return NULL;
-        }
-        return swipeTracking ? NULL : ev;
+        passthrough += 2;
+        CGEventRef fake_move = make_dock_event(kGestureChanged, true);
+        CGEventPost(kCGSessionEventTap, fake_move);
+        CFRelease(fake_move);
+        CGEventRef fake_end = make_dock_event(kGestureCancelled, true);
+        CGEventPost(kCGSessionEventTap, fake_end);
+        CFRelease(fake_end);
+        swipeTracking = false;
+        return NULL;
     }
 
     // Suppress companion gesture events paired with the dock swipe
