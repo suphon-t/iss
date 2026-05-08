@@ -189,7 +189,7 @@ static void post_switch(bool right) {
     double sign = right ? 1.0 : -1.0;
 
     CGEventRef end = make_dock_event(kGestureEnded, right);
-    CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityX, sign * 65.0);
+    CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityX, sign * 400.0);
     CGEventSetDoubleValueField(end, kCGEventGestureSwipeVelocityY, 0);
 
     passthrough += 2; // 2 pairs × 1 event
