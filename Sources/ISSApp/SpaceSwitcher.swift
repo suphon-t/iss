@@ -64,6 +64,11 @@ final class SpaceSwitcher {
         return ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 27
     }()
 
+    /// Velocity of the synthetic End on macOS 27: high enough that the Dock
+    /// switches with no animation, and a low value for the edge bounce.
+    private static let instantSwitchVelocity = 9999.0
+    private static let edgeBumpVelocity = 100.0
+
     private var tap: CFMachPort?
     private var source: CFRunLoopSource?
     private var swipeTracking = false
@@ -118,13 +123,14 @@ final class SpaceSwitcher {
         let right = direction == .right
 
         if Self.requiresEventAugmentation {
-            // macOS 27: CGS's idea of the active space can lag behind the
-            // Dock after a synthetic switch, so a boundary pre-check would
-            // refuse legitimate switches. Skip it (and the edge bump, whose
-            // unaugmented events the Dock ignores) and let the Dock handle
-            // the edges itself.
-            runOnMain { self.postAugmentedSwitch(right: right) }
-            return true
+            // macOS 27: at an edge, post the same sequence with a low
+            // velocity so the Dock shows a gentle rubber-band bounce instead
+            // of the full-force one. (The pre-27 edge bump's unaugmented
+            // events are ignored by the Dock.)
+            let canSwitch = canSwitch(right: right)
+            let velocity = canSwitch ? Self.instantSwitchVelocity : Self.edgeBumpVelocity
+            runOnMain { self.postAugmentedSwitch(right: right, velocity: velocity) }
+            return canSwitch
         }
 
         // Hop to the main run loop so passthrough increments are ordered with
@@ -308,10 +314,10 @@ final class SpaceSwitcher {
 
     // MARK: - macOS 27 augmented events
 
-    private func postAugmentedSwitch(right: Bool) {
+    private func postAugmentedSwitch(right: Bool, velocity: Double = SpaceSwitcher.instantSwitchVelocity) {
         var events: [CGEvent] = []
         for phase in [kGestureBegan, kGestureChanged, kGestureEnded] {
-            guard let event = makeAugmentedDockEvent(phase: phase, right: right) else {
+            guard let event = makeAugmentedDockEvent(phase: phase, right: right, velocity: velocity) else {
                 switcherLog.error("failed to build augmented dock event phase=\(phase)")
                 return
             }
@@ -329,7 +335,7 @@ final class SpaceSwitcher {
     // right, the opposite of the pre-27 events built by makeDockEvent and of
     // the real trackpad events (verified: the Switch Left/Right buttons go the
     // right way with this mapping).
-    private func makeAugmentedDockEvent(phase: Int64, right: Bool) -> CGEvent? {
+    private func makeAugmentedDockEvent(phase: Int64, right: Bool, velocity: Double) -> CGEvent? {
         guard let event = CGEvent(source: nil) else {
             return nil
         }
@@ -344,7 +350,7 @@ final class SpaceSwitcher {
         event.setDoubleValueField(kCGEventSourceProcessAlias, value: Double(mach_absolute_time()))
         event.setDoubleValueField(kCGEventGestureSwipePositionX, value: 0.1)
         if phase == kGestureEnded {
-            event.setDoubleValueField(kCGEventGestureSwipeVelocityX, value: right ? -9999.0 : 9999.0)
+            event.setDoubleValueField(kCGEventGestureSwipeVelocityX, value: right ? -velocity : velocity)
         }
 
         return augmentDockSwipeEvent(event)
@@ -588,7 +594,7 @@ extension SpaceSwitcher {
     fileprivate func makeInstantEndCopy(of event: CGEvent, right: Bool) -> CGEvent? {
         let phase = kGestureEnded
         let progress = right ? -1.0 : 1.0
-        let velocityX = right ? -9999.0 : 9999.0
+        let velocityX = right ? -Self.instantSwitchVelocity : Self.instantSwitchVelocity
 
         event.setIntegerValueField(kCGEventGesturePhase, value: phase)
         event.setIntegerValueField(kCGEventGesturePhaseAlias, value: phase)
