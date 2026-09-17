@@ -5,7 +5,7 @@ import Foundation
 import os
 import QuartzCore
 
-private let switcherLog = Logger(subsystem: "com.instant-swipe.issd", category: "switcher")
+private let switcherLog = Logger(subsystem: "com.instant-swipe.iss", category: "switcher")
 
 @_silgen_name("CGSMainConnectionID")
 private func CGSMainConnectionID() -> Int32

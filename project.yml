@@ -15,9 +15,6 @@ targets:
     sources:
       - path: Sources/ISSApp
       - path: Sources/Shared
-      - path: Resources
-        includes:
-          - com.instant-swipe.issd.plist
     settings:
       base:
         PRODUCT_NAME: ISSApp
@@ -25,28 +22,8 @@ targets:
         INFOPLIST_KEY_NSAppleEventsUsageDescription: Switch spaces instantly.
         INFOPLIST_KEY_NSHumanReadableCopyright: MIT
         SWIFT_OBJC_BRIDGING_HEADER: Sources/ISSApp/ISSApp-Bridging-Header.h
-    postBuildScripts:
-      - name: Copy daemon plist for SMAppService
-        script: |
-          set -euo pipefail
-          SRC_PLIST="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/com.instant-swipe.issd.plist"
-          DST_DIR="${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchAgents"
-          mkdir -p "$DST_DIR"
-          cp "$SRC_PLIST" "$DST_DIR/com.instant-swipe.issd.plist"
     dependencies:
-      - target: ISSDaemon
       - target: ISSCLI
-
-  ISSDaemon:
-    type: tool
-    platform: macOS
-    sources:
-      - path: Sources/ISSDaemon
-      - path: Sources/Shared
-    settings:
-      base:
-        PRODUCT_NAME: ISSDaemon
-        GENERATE_INFOPLIST_FILE: YES
 
   ISSCLI:
     type: tool

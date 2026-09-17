@@ -1,12 +1,21 @@
 import SwiftUI
+import AppKit
+
+private struct TitlebarTransparentConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            view.window?.titlebarAppearsTransparent = true
+            view.window?.titlebarSeparatorStyle = .none
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
 
 struct ContentView: View {
-    @State private var daemonStatus: String = DaemonServiceManager.statusDescription()
-    @State private var daemonHashSummary: String = "unknown"
-    @State private var daemonUpToDate: Bool = false
-    @State private var daemonPath: String = ""
-    @State private var daemonPermissionGranted: Bool = false
-    @State private var cliInstalled: Bool = CLIInstaller.isInstalled()
+    @EnvironmentObject var model: AppModel
     @State private var message: String = ""
     @State private var messageKind: MessageKind = .info
     @State private var refreshTimer: Timer?
@@ -22,14 +31,14 @@ struct ContentView: View {
             statusCard
 
             actionsCard(
-                title: "Daemon",
-                systemImage: "gearshape.2.fill",
+                title: "Behavior",
+                systemImage: "gearshape.fill",
                 buttons: [
-                    .init(label: "Request Permission", systemImage: "checkmark.shield", style: .secondary, action: requestPermission),
-                    .init(label: "Install / Update", systemImage: "arrow.down.circle", style: .primary, action: installDaemon),
-                    .init(label: "Uninstall", systemImage: "trash", style: .destructive, action: uninstallDaemon),
+                    .init(label: "Grant Accessibility…", systemImage: "checkmark.shield", style: .secondary, action: requestPermission),
                 ]
             )
+
+            generalCard
 
             actionsCard(
                 title: "Quick Switch",
@@ -54,8 +63,11 @@ struct ContentView: View {
         .padding(20)
         .frame(width: 560)
         .background(Color(NSColor.windowBackgroundColor))
+        .background(TitlebarTransparentConfigurator().frame(width: 0, height: 0))
         .onAppear {
-            Task { await refreshStatus() }
+            // The window is on screen — make sure the Dock icon is showing.
+            NSApp.setActivationPolicy(.regular)
+            model.refreshStatus()
             startPolling()
         }
         .onDisappear { stopPolling() }
@@ -65,7 +77,7 @@ struct ContentView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "rectangle.stack.badge.plus")
+            Image(systemName: "rectangle.split.2x1")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 2) {
@@ -91,42 +103,77 @@ struct ContentView: View {
 
             VStack(spacing: 8) {
                 statusRow(
-                    label: "Input Permission",
-                    value: daemonPermissionGranted ? "Granted" : "Missing",
-                    state: daemonPermissionGranted ? .ok : .error
+                    label: "Accessibility",
+                    value: model.accessibilityGranted ? "Granted" : "Missing",
+                    state: model.accessibilityGranted ? .ok : .error
                 )
                 statusRow(
-                    label: "Daemon",
-                    value: daemonStatus.capitalized,
-                    state: statusState(for: daemonStatus)
-                )
-                statusRow(
-                    label: "Daemon Freshness",
-                    value: daemonUpToDate ? "Up to date" : "Stale or unreachable",
-                    state: daemonUpToDate ? .ok : .warning
-                )
-                statusRow(
-                    label: "Daemon Hash",
-                    value: daemonHashSummary,
-                    state: daemonUpToDate ? .ok : .neutral,
-                    monospaced: true
+                    label: "Launch at Login",
+                    value: model.launchAtLoginEnabled ? "Enabled" : "Disabled",
+                    state: model.launchAtLoginEnabled ? .ok : .neutral
                 )
                 statusRow(
                     label: "CLI",
-                    value: cliInstalled ? "Installed" : "Not installed",
-                    state: cliInstalled ? .ok : .neutral
+                    value: model.cliInstalled ? "Installed" : "Not installed",
+                    state: model.cliInstalled ? .ok : .neutral
                 )
             }
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(NSColor.controlBackgroundColor))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+        .background(cardBackground)
+    }
+
+    private var generalCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 6) {
+                Image(systemName: "power")
+                    .foregroundStyle(.secondary)
+                Text("General")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            settingToggle(
+                title: "Launch at Login",
+                subtitle: "Start ISSApp automatically when you sign in.",
+                isOn: Binding(
+                    get: { model.launchAtLoginEnabled },
+                    set: { setLaunchAtLogin($0) }
+                )
+            )
+
+            Divider()
+
+            settingToggle(
+                title: "Show Menu Bar Item",
+                subtitle: "Display the ISS icon in the menu bar.",
+                isOn: $model.showMenuBarItem
+            )
+        }
+        .padding(14)
+        .background(cardBackground)
+    }
+
+    private func settingToggle(title: String, subtitle: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                Text(subtitle)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .toggleStyle(.switch)
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(Color(NSColor.controlBackgroundColor))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+            )
     }
 
     private struct ActionButton: Identifiable {
@@ -156,14 +203,7 @@ struct ContentView: View {
             }
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(NSColor.controlBackgroundColor))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-        )
+        .background(cardBackground)
     }
 
     @ViewBuilder
@@ -174,19 +214,16 @@ struct ContentView: View {
                 Label(btn.label, systemImage: btn.systemImage)
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
         case .secondary:
             Button(action: btn.action) {
                 Label(btn.label, systemImage: btn.systemImage)
             }
             .buttonStyle(.bordered)
-            .controlSize(.regular)
         case .destructive:
             Button(role: .destructive, action: btn.action) {
                 Label(btn.label, systemImage: btn.systemImage)
             }
             .buttonStyle(.bordered)
-            .controlSize(.regular)
         }
     }
 
@@ -230,7 +267,7 @@ struct ContentView: View {
         }
     }
 
-    private func statusRow(label: String, value: String, state: StatusState, monospaced: Bool = false) -> some View {
+    private func statusRow(label: String, value: String, state: StatusState) -> some View {
         HStack(spacing: 10) {
             Circle()
                 .fill(state.color)
@@ -241,20 +278,12 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
             Spacer(minLength: 8)
             Text(value)
-                .font(.system(size: 12, weight: .medium, design: monospaced ? .monospaced : .default))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .textSelection(.enabled)
         }
-    }
-
-    private func statusState(for status: String) -> StatusState {
-        let lower = status.lowercased()
-        if lower.contains("stale") { return .warning }
-        if lower.contains("enabled") || lower.contains("running") { return .ok }
-        if lower.contains("not") || lower.contains("disabled") || lower.contains("error") { return .error }
-        return .neutral
     }
 
     private var messageIcon: String {
@@ -281,7 +310,10 @@ struct ContentView: View {
         guard refreshTimer == nil else { return }
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             Task { @MainActor in
-                await refreshStatus()
+                model.refreshStatus()
+                if model.accessibilityGranted {
+                    model.startMonitoringIfPossible()
+                }
             }
         }
     }
@@ -294,55 +326,33 @@ struct ContentView: View {
     // MARK: - Actions
 
     private func requestPermission() {
-        startPolling()
-        Task {
-            do {
-                daemonPermissionGranted = try await XPCClient.requestDaemonAccessibilityPermission()
-                if !daemonPermissionGranted {
-                    setMessage("Daemon permission not granted yet. Approve in Privacy & Security › Accessibility.", kind: .warning)
-                } else {
-                    setMessage("Daemon permission granted.", kind: .success)
-                }
-            } catch {
-                setMessage("Could not request daemon permission: \(error.localizedDescription)", kind: .error)
-            }
+        model.requestAccessibilityPermission()
+        if model.accessibilityGranted {
+            setMessage("Accessibility granted.", kind: .success)
+        } else {
+            setMessage("Approve ISSApp in Privacy & Security › Accessibility.", kind: .warning)
         }
     }
 
-    private func installDaemon() {
-        startPolling()
+    private func setLaunchAtLogin(_ enabled: Bool) {
         do {
-            try DaemonServiceManager.installOrUpdateDaemon()
-            daemonStatus = DaemonServiceManager.statusDescription()
-            setMessage("Daemon installed/updated. If needed, approve in Login Items and re-grant Accessibility for the current daemon path.", kind: .success)
-
-            Task { await refreshStatus() }
+            try model.setLaunchAtLogin(enabled)
+            setMessage(enabled ? "ISSApp will launch at login." : "Launch at login disabled.", kind: .info)
         } catch {
-            daemonStatus = DaemonServiceManager.statusDescription()
-            setMessage("Daemon install failed: \(error.localizedDescription)", kind: .error)
-        }
-    }
-
-    private func uninstallDaemon() {
-        startPolling()
-        do {
-            try DaemonServiceManager.unregisterDaemon()
-            daemonStatus = DaemonServiceManager.statusDescription()
-            setMessage("Daemon unregistered.", kind: .info)
-        } catch {
-            daemonStatus = DaemonServiceManager.statusDescription()
-            setMessage("Daemon uninstall failed: \(error.localizedDescription)", kind: .error)
+            setMessage("Could not update Login Items: \(error.localizedDescription)", kind: .error)
         }
     }
 
     private func switchSpace(_ direction: SpaceDirection) {
-        Task {
-            do {
-                try await XPCClient.switchSpace(direction: direction)
-                setMessage(direction == .left ? "Switched left." : "Switched right.", kind: .success)
-            } catch {
-                setMessage("Switch failed: \(error.localizedDescription)", kind: .error)
-            }
+        if !model.accessibilityGranted {
+            setMessage("Grant Accessibility first.", kind: .warning)
+            return
+        }
+        if model.switchSpace(direction) {
+            setMessage(direction == .left ? "Switched left." : "Switched right.", kind: .success)
+        } else {
+            let edge = direction == .left ? "leftmost" : "rightmost"
+            setMessage("Already at the \(edge) space.", kind: .info)
         }
     }
 
@@ -350,8 +360,8 @@ struct ContentView: View {
         Task { @MainActor in
             do {
                 try await CLIInstaller.install()
-                cliInstalled = CLIInstaller.isInstalled()
-                setMessage("CLI installed at /usr/local/bin/\(ISSConstants.cliExecutableName)", kind: .success)
+                model.refreshStatus()
+                setMessage("CLI installed at \(ISSConstants.cliInstallPath)", kind: .success)
             } catch {
                 setMessage("CLI install failed: \(error.localizedDescription)", kind: .error)
             }
@@ -362,8 +372,8 @@ struct ContentView: View {
         Task { @MainActor in
             do {
                 try await CLIInstaller.uninstall()
-                cliInstalled = CLIInstaller.isInstalled()
-                setMessage("CLI removed from /usr/local/bin.", kind: .info)
+                model.refreshStatus()
+                setMessage("CLI removed from \(ISSConstants.cliInstallDirectory).", kind: .info)
             } catch {
                 setMessage("CLI uninstall failed: \(error.localizedDescription)", kind: .error)
             }
@@ -373,43 +383,5 @@ struct ContentView: View {
     private func setMessage(_ text: String, kind: MessageKind) {
         message = text
         messageKind = kind
-    }
-
-    @MainActor
-    private func refreshStatus() async {
-        daemonStatus = DaemonServiceManager.statusDescription()
-        let expectedPath = DaemonServiceManager.expectedDaemonExecutablePath()
-        let expectedHash = DaemonServiceManager.expectedDaemonExecutableHash()
-
-        do {
-            let runtime = try await XPCClient.daemonRuntimeInfo()
-            daemonPermissionGranted = runtime.accessibilityGranted
-            let currentHashPrefix = runtime.binaryHash.isEmpty ? "unavailable" : String(runtime.binaryHash.prefix(12))
-            let expectedHashPrefix = expectedHash.isEmpty ? "unavailable" : String(expectedHash.prefix(12))
-            daemonHashSummary = "\(currentHashPrefix) (expected \(expectedHashPrefix))"
-            daemonPath = runtime.executablePath
-            daemonUpToDate = !runtime.binaryHash.isEmpty && !expectedHash.isEmpty && (runtime.binaryHash == expectedHash)
-
-            if !daemonUpToDate, daemonStatus == "enabled" {
-                daemonStatus = "enabled (running stale daemon binary)"
-            }
-        } catch {
-            daemonPermissionGranted = false
-            daemonHashSummary = "unreachable"
-            daemonPath = ""
-            daemonUpToDate = false
-        }
-        cliInstalled = CLIInstaller.isInstalled()
-
-        if !daemonPath.isEmpty && !daemonUpToDate {
-            let staleMsg = "Daemon binary hash mismatch. Running path: \(daemonPath). Expected path: \(expectedPath). Use Install/Update Daemon, then re-grant Accessibility for the current daemon path."
-            if message.isEmpty || message.hasPrefix("Daemon binary hash mismatch.") {
-                setMessage(staleMsg, kind: .warning)
-            }
-        }
-
-        if daemonPermissionGranted && daemonUpToDate {
-            stopPolling()
-        }
     }
 }

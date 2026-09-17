@@ -2,7 +2,7 @@ import Foundation
 
 private enum CLIError: Error {
     case badUsage
-    case xpc(String)
+    case failure(String)
 }
 
 private func printUsage() {
@@ -26,7 +26,7 @@ private func parseDirection(_ value: String) throws -> SpaceDirection {
 private func installSelf() throws {
     let fm = FileManager.default
     guard let source = Bundle.main.executablePath else {
-        throw CLIError.xpc("Could not resolve own executable path")
+        throw CLIError.failure("Could not resolve own executable path")
     }
     let destDir = ISSConstants.cliInstallDirectory
     let destPath = ISSConstants.cliInstallPath
@@ -41,7 +41,7 @@ private func installSelf() throws {
     try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destPath)
 
     guard fm.isExecutableFile(atPath: destPath) else {
-        throw CLIError.xpc("Install completed but executable was not found at \(destPath)")
+        throw CLIError.failure("Install completed but executable was not found at \(destPath)")
     }
 }
 
@@ -53,37 +53,49 @@ private func uninstallSelf() throws {
     }
 }
 
+// Ask the running ISSApp to switch spaces via a distributed notification and
+// wait for its reply. Requires ISSApp to be running.
 private func switchSpace(direction: SpaceDirection, timeout: TimeInterval = 2.0) throws {
-    let semaphore = DispatchSemaphore(value: 0)
-    var resultError: Error?
+    let center = DistributedNotificationCenter.default()
+    let requestID = UUID().uuidString
+    var replyOK = false
+    var replyMessage = ""
+    var gotReply = false
 
-    let connection = NSXPCConnection(machServiceName: ISSConstants.machServiceName, options: [])
-    connection.remoteObjectInterface = NSXPCInterface(with: ISSXPCServiceProtocol.self)
-    connection.invalidationHandler = { semaphore.signal() }
-    connection.interruptionHandler = { semaphore.signal() }
-    connection.resume()
+    let observer = center.addObserver(
+        forName: Notification.Name(ISSConstants.switchReplyName),
+        object: nil,
+        queue: .main
+    ) { note in
+        guard let payload = note.object as? String else { return }
+        let parts = payload.split(separator: "|", maxSplits: 2, omittingEmptySubsequences: false)
+        guard parts.count >= 2, String(parts[0]) == requestID else { return }
+        replyOK = (parts[1] == "ok")
+        replyMessage = parts.count > 2 ? String(parts[2]) : ""
+        gotReply = true
+    }
+    defer { center.removeObserver(observer) }
 
-    let proxy = connection.remoteObjectProxyWithErrorHandler { error in
-        resultError = error
-        semaphore.signal()
-    } as? ISSXPCServiceProtocol
+    let dirString = direction == .left ? "left" : "right"
+    center.postNotificationName(
+        Notification.Name(ISSConstants.switchRequestName),
+        object: "\(requestID)|\(dirString)",
+        userInfo: nil,
+        deliverImmediately: true
+    )
 
-    proxy?.switchSpace(direction.rawValue) { ok, message in
-        if !ok {
-            resultError = CLIError.xpc(message ?? "Daemon rejected command")
-        }
-        semaphore.signal()
+    // Distributed notifications arrive on the run loop, so spin it until the
+    // reply lands or the deadline passes.
+    let deadline = Date().addingTimeInterval(timeout)
+    while !gotReply && Date() < deadline {
+        RunLoop.current.run(mode: .default, before: deadline)
     }
 
-    let waitResult = semaphore.wait(timeout: .now() + timeout)
-    connection.invalidate()
-
-    if waitResult == .timedOut {
-        throw CLIError.xpc("Timed out waiting for daemon")
+    if !gotReply {
+        throw CLIError.failure("ISSApp did not respond. Make sure ISSApp is running.")
     }
-
-    if let resultError {
-        throw resultError
+    if !replyOK {
+        throw CLIError.failure(replyMessage.isEmpty ? "Switch failed." : replyMessage)
     }
 }
 
@@ -108,7 +120,7 @@ do {
 } catch CLIError.badUsage {
     printUsage()
     Foundation.exit(64)
-} catch CLIError.xpc(let msg) {
+} catch CLIError.failure(let msg) {
     fputs("error: \(msg)\n", stderr)
     Foundation.exit(1)
 } catch {

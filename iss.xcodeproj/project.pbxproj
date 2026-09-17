@@ -8,34 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		13B80F1C36F9275E4E8303BC /* ISSConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EFEDD6CCBC3D25930E4B46 /* ISSConstants.swift */; };
+		3C9AF31D36F2FE0E1E1BFCC0 /* LoginItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A644C635DC6F603BA9E8C6D /* LoginItemManager.swift */; };
 		44519E4BFA7E9626076A6B9F /* InputPermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E5DA8AF14C7576C94EF787 /* InputPermissionManager.swift */; };
-		4BB7A259BD550C6B1A373B22 /* ISSDaemon in Resources */ = {isa = PBXBuildFile; fileRef = 360AFCD01DDF6AB5718D2541 /* ISSDaemon */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4E4AFD8E85414F412983AB6A /* issctl in Resources */ = {isa = PBXBuildFile; fileRef = 2E41349AEA8B8025D38AB462 /* issctl */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		4F3622A7481776704590C0AF /* com.instant-swipe.issd.plist in Resources */ = {isa = PBXBuildFile; fileRef = 94C0280B0E1D2EDDFAC882E4 /* com.instant-swipe.issd.plist */; };
-		6FF8B1C5F569C83F5D4C3A35 /* ISSXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4BD2F54C3FD4C9B579F3B6 /* ISSXPCProtocol.swift */; };
+		77E12B716E4DB44ADCD7CEFD /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10EE722A89868758C04905A /* AppModel.swift */; };
 		7829C9F59641B564247BD90A /* ISSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C82FBBDF97609AD2A32906 /* ISSApp.swift */; };
-		7B2A2FDF5E9FDBA9DFEAD7B3 /* XPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F468CC0750300905455373 /* XPCClient.swift */; };
-		8006B2674277C786BAB7AA56 /* SpaceSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DA1A214CBCCCC8357FC776C /* SpaceSwitcher.swift */; };
-		84A07663292C062BBDFF90C0 /* ISSXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4BD2F54C3FD4C9B579F3B6 /* ISSXPCProtocol.swift */; };
-		8895F0068A943819541F1E65 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB5D3CCC93533B3A3206E32 /* main.swift */; };
-		88AD222151D519B2F553BEAF /* DaemonServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9030257939A126218D1B0AFA /* DaemonServiceManager.swift */; };
+		7ECAD8A75D05F06B43E4A968 /* CommandReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D9C83C690DC146B3F7BEA59 /* CommandReceiver.swift */; };
+		91261DE9E00C1EF2B1B71F7D /* SpaceSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696E9D3D4C76DD4D59062FE8 /* SpaceSwitcher.swift */; };
 		930B9DCB9428D262C6F98814 /* CLIInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A83D75317A2FCA70FE80807A /* CLIInstaller.swift */; };
-		A0C226C52D23BE58D634572E /* ISSXPCProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4BD2F54C3FD4C9B579F3B6 /* ISSXPCProtocol.swift */; };
 		AFA2AB773F84A4BD83D385BA /* PrivilegedRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = FE248337F4CBAF47D695F4C4 /* PrivilegedRunner.m */; };
 		CC97B3D2A7E4C9F77DA3E475 /* ISSConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EFEDD6CCBC3D25930E4B46 /* ISSConstants.swift */; };
 		D632BEE2DA5179006F6DA1A9 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE539CC5C3C8D25FEF154565 /* main.swift */; };
-		DA4BFD9430C58471A2C7BE5F /* ISSConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EFEDD6CCBC3D25930E4B46 /* ISSConstants.swift */; };
 		E9F1CEB2323AD88A62BC1343 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374BC4A7280BAD177238F003 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		73D28E31EB9B32C0313DA564 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E9026931144F1B02BB4D1045 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E1BD0BC3813A6F7F7D8B8C7A;
-			remoteInfo = ISSDaemon;
-		};
 		7CF2313862F77F797D1EC148 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E9026931144F1B02BB4D1045 /* Project object */;
@@ -48,18 +35,15 @@
 /* Begin PBXFileReference section */
 		00A8C7AE336F14A713555996 /* PrivilegedRunner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrivilegedRunner.h; sourceTree = "<group>"; };
 		2E41349AEA8B8025D38AB462 /* issctl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = issctl; sourceTree = BUILT_PRODUCTS_DIR; };
-		360AFCD01DDF6AB5718D2541 /* ISSDaemon */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ISSDaemon; sourceTree = BUILT_PRODUCTS_DIR; };
 		374BC4A7280BAD177238F003 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		3BB5D3CCC93533B3A3206E32 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		49F468CC0750300905455373 /* XPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPCClient.swift; sourceTree = "<group>"; };
-		4F4BD2F54C3FD4C9B579F3B6 /* ISSXPCProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISSXPCProtocol.swift; sourceTree = "<group>"; };
-		6DA1A214CBCCCC8357FC776C /* SpaceSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSwitcher.swift; sourceTree = "<group>"; };
+		696E9D3D4C76DD4D59062FE8 /* SpaceSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSwitcher.swift; sourceTree = "<group>"; };
 		77DD52ABFCA78EE1FE5856E8 /* ISSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ISSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9030257939A126218D1B0AFA /* DaemonServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaemonServiceManager.swift; sourceTree = "<group>"; };
-		94C0280B0E1D2EDDFAC882E4 /* com.instant-swipe.issd.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "com.instant-swipe.issd.plist"; sourceTree = "<group>"; };
+		7D9C83C690DC146B3F7BEA59 /* CommandReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandReceiver.swift; sourceTree = "<group>"; };
+		9A644C635DC6F603BA9E8C6D /* LoginItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemManager.swift; sourceTree = "<group>"; };
 		A7C82FBBDF97609AD2A32906 /* ISSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISSApp.swift; sourceTree = "<group>"; };
 		A7EFEDD6CCBC3D25930E4B46 /* ISSConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISSConstants.swift; sourceTree = "<group>"; };
 		A83D75317A2FCA70FE80807A /* CLIInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIInstaller.swift; sourceTree = "<group>"; };
+		C10EE722A89868758C04905A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		CDE2FB487DF489D36DA9AFD3 /* ISSApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ISSApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		D5E5DA8AF14C7576C94EF787 /* InputPermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputPermissionManager.swift; sourceTree = "<group>"; };
 		DE539CC5C3C8D25FEF154565 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -70,7 +54,6 @@
 		304D7B289B6104B98AB1CB6B = {
 			isa = PBXGroup;
 			children = (
-				CA4A746D492C1A224A11A55C /* Resources */,
 				5A88E7D8E751C2F6957CDE5A /* Sources */,
 				414A9714AD20742B612895D8 /* Products */,
 			);
@@ -81,7 +64,6 @@
 			children = (
 				77DD52ABFCA78EE1FE5856E8 /* ISSApp.app */,
 				2E41349AEA8B8025D38AB462 /* issctl */,
-				360AFCD01DDF6AB5718D2541 /* ISSDaemon */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -91,7 +73,6 @@
 			children = (
 				5D1B852B82D4B98EB83191D6 /* ISSApp */,
 				D8AE2F0D5E956FD77EC8C724 /* ISSCLI */,
-				7479F44CD8BBD47E7B6EEB0E /* ISSDaemon */,
 				6F9A1F01400E09567E1C3958 /* Shared */,
 			);
 			path = Sources;
@@ -100,15 +81,17 @@
 		5D1B852B82D4B98EB83191D6 /* ISSApp */ = {
 			isa = PBXGroup;
 			children = (
+				C10EE722A89868758C04905A /* AppModel.swift */,
 				A83D75317A2FCA70FE80807A /* CLIInstaller.swift */,
+				7D9C83C690DC146B3F7BEA59 /* CommandReceiver.swift */,
 				374BC4A7280BAD177238F003 /* ContentView.swift */,
-				9030257939A126218D1B0AFA /* DaemonServiceManager.swift */,
 				D5E5DA8AF14C7576C94EF787 /* InputPermissionManager.swift */,
 				CDE2FB487DF489D36DA9AFD3 /* ISSApp-Bridging-Header.h */,
 				A7C82FBBDF97609AD2A32906 /* ISSApp.swift */,
+				9A644C635DC6F603BA9E8C6D /* LoginItemManager.swift */,
 				00A8C7AE336F14A713555996 /* PrivilegedRunner.h */,
 				FE248337F4CBAF47D695F4C4 /* PrivilegedRunner.m */,
-				49F468CC0750300905455373 /* XPCClient.swift */,
+				696E9D3D4C76DD4D59062FE8 /* SpaceSwitcher.swift */,
 			);
 			path = ISSApp;
 			sourceTree = "<group>";
@@ -117,26 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				A7EFEDD6CCBC3D25930E4B46 /* ISSConstants.swift */,
-				4F4BD2F54C3FD4C9B579F3B6 /* ISSXPCProtocol.swift */,
 			);
 			path = Shared;
-			sourceTree = "<group>";
-		};
-		7479F44CD8BBD47E7B6EEB0E /* ISSDaemon */ = {
-			isa = PBXGroup;
-			children = (
-				3BB5D3CCC93533B3A3206E32 /* main.swift */,
-				6DA1A214CBCCCC8357FC776C /* SpaceSwitcher.swift */,
-			);
-			path = ISSDaemon;
-			sourceTree = "<group>";
-		};
-		CA4A746D492C1A224A11A55C /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				94C0280B0E1D2EDDFAC882E4 /* com.instant-swipe.issd.plist */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 		D8AE2F0D5E956FD77EC8C724 /* ISSCLI */ = {
@@ -156,12 +121,10 @@
 			buildPhases = (
 				B66FC70B9B1B512883F7E7A7 /* Sources */,
 				8B45AE2D8E2DA2F3A90B4C35 /* Resources */,
-				E52912E0B716606B03AF27EE /* Copy daemon plist for SMAppService */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B853B02810E410E2072A08A7 /* PBXTargetDependency */,
 				84B94B8C09550551247EC5C6 /* PBXTargetDependency */,
 			);
 			name = ISSApp;
@@ -186,23 +149,6 @@
 			);
 			productName = ISSCLI;
 			productReference = 2E41349AEA8B8025D38AB462 /* issctl */;
-			productType = "com.apple.product-type.tool";
-		};
-		E1BD0BC3813A6F7F7D8B8C7A /* ISSDaemon */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F1472DF7ED30718C726A368E /* Build configuration list for PBXNativeTarget "ISSDaemon" */;
-			buildPhases = (
-				01A81E7DD000B497E3F50193 /* Sources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = ISSDaemon;
-			packageProductDependencies = (
-			);
-			productName = ISSDaemon;
-			productReference = 360AFCD01DDF6AB5718D2541 /* ISSDaemon */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -230,7 +176,6 @@
 			targets = (
 				4EE3738CCA528EC79F2B82DC /* ISSApp */,
 				A47C11C0E2865CBA3DF9DD5B /* ISSCLI */,
-				E1BD0BC3813A6F7F7D8B8C7A /* ISSDaemon */,
 			);
 		};
 /* End PBXProject section */
@@ -240,53 +185,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4F3622A7481776704590C0AF /* com.instant-swipe.issd.plist in Resources */,
-				4BB7A259BD550C6B1A373B22 /* ISSDaemon in Resources */,
 				4E4AFD8E85414F412983AB6A /* issctl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		E52912E0B716606B03AF27EE /* Copy daemon plist for SMAppService */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy daemon plist for SMAppService";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\nSRC_PLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/com.instant-swipe.issd.plist\"\nDST_DIR=\"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchAgents\"\nmkdir -p \"$DST_DIR\"\ncp \"$SRC_PLIST\" \"$DST_DIR/com.instant-swipe.issd.plist\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
-		01A81E7DD000B497E3F50193 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DA4BFD9430C58471A2C7BE5F /* ISSConstants.swift in Sources */,
-				84A07663292C062BBDFF90C0 /* ISSXPCProtocol.swift in Sources */,
-				8006B2674277C786BAB7AA56 /* SpaceSwitcher.swift in Sources */,
-				8895F0068A943819541F1E65 /* main.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		62CF3FAA6BE78FE043626098 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				13B80F1C36F9275E4E8303BC /* ISSConstants.swift in Sources */,
-				A0C226C52D23BE58D634572E /* ISSXPCProtocol.swift in Sources */,
 				D632BEE2DA5179006F6DA1A9 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -295,15 +205,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77E12B716E4DB44ADCD7CEFD /* AppModel.swift in Sources */,
 				930B9DCB9428D262C6F98814 /* CLIInstaller.swift in Sources */,
+				7ECAD8A75D05F06B43E4A968 /* CommandReceiver.swift in Sources */,
 				E9F1CEB2323AD88A62BC1343 /* ContentView.swift in Sources */,
-				88AD222151D519B2F553BEAF /* DaemonServiceManager.swift in Sources */,
 				7829C9F59641B564247BD90A /* ISSApp.swift in Sources */,
 				CC97B3D2A7E4C9F77DA3E475 /* ISSConstants.swift in Sources */,
-				6FF8B1C5F569C83F5D4C3A35 /* ISSXPCProtocol.swift in Sources */,
 				44519E4BFA7E9626076A6B9F /* InputPermissionManager.swift in Sources */,
+				3C9AF31D36F2FE0E1E1BFCC0 /* LoginItemManager.swift in Sources */,
 				AFA2AB773F84A4BD83D385BA /* PrivilegedRunner.m in Sources */,
-				7B2A2FDF5E9FDBA9DFEAD7B3 /* XPCClient.swift in Sources */,
+				91261DE9E00C1EF2B1B71F7D /* SpaceSwitcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,11 +225,6 @@
 			isa = PBXTargetDependency;
 			target = A47C11C0E2865CBA3DF9DD5B /* ISSCLI */;
 			targetProxy = 7CF2313862F77F797D1EC148 /* PBXContainerItemProxy */;
-		};
-		B853B02810E410E2072A08A7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E1BD0BC3813A6F7F7D8B8C7A /* ISSDaemon */;
-			targetProxy = 73D28E31EB9B32C0313DA564 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -414,21 +320,6 @@
 			};
 			name = Debug;
 		};
-		4948C0F8E148D6C31407B032 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = 2HCNNF2TB5;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_NAME = ISSDaemon;
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
 		7D79A5822754DCC8D920D698 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -445,21 +336,6 @@
 				PRODUCT_NAME = ISSApp;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/ISSApp/ISSApp-Bridging-Header.h";
-			};
-			name = Release;
-		};
-		ABBA04B53F48E659E003D7E6 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = 2HCNNF2TB5;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				PRODUCT_NAME = ISSDaemon;
-				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -568,15 +444,6 @@
 			buildConfigurations = (
 				0E1FF93C4FDE4E130F1A5F26 /* Debug */,
 				B03ECFE33A8C5B1E0EF9B881 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		F1472DF7ED30718C726A368E /* Build configuration list for PBXNativeTarget "ISSDaemon" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4948C0F8E148D6C31407B032 /* Debug */,
-				ABBA04B53F48E659E003D7E6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
