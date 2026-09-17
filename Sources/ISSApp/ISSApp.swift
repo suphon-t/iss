@@ -1,5 +1,8 @@
 import SwiftUI
 import AppKit
+import os
+
+private let appLog = Logger(subsystem: "com.instant-swipe.iss", category: "app")
 
 @main
 struct ISSApp: App {
@@ -76,6 +79,19 @@ private struct MenuBarContent: View {
 /// Hides the Dock icon while no window is open. The menubar item remains the
 /// only visible presence; opening the window restores the regular Dock icon.
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// True when the system launched the app as a login item, or when
+    /// ISS_START_HIDDEN=1 is set (for testing without logging out).
+    private var startHidden = false
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        startHidden = AppDelegate.launchedAsLoginItem()
+            || ProcessInfo.processInfo.environment["ISS_START_HIDDEN"] == "1"
+        if startHidden {
+            // Menu bar only: no Dock icon, and don't steal focus at login.
+            NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NotificationCenter.default.addObserver(
             self,
@@ -83,6 +99,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSWindow.willCloseNotification,
             object: nil
         )
+
+        if startHidden {
+            // SwiftUI opens the WindowGroup's window regardless; close it on
+            // the next run loop tick, before it has a chance to be used.
+            DispatchQueue.main.async {
+                let windows = NSApp.windows.filter { $0.canBecomeMain && !$0.isExcludedFromWindowsMenu }
+                windows.forEach { $0.close() }
+                NSApp.setActivationPolicy(.accessory)
+                appLog.info("started hidden (login item); closed \(windows.count) window(s)")
+            }
+        }
+    }
+
+    /// Login items launched by the system carry an open-application Apple
+    /// event whose property data is keyAELaunchedAsLogInItem.
+    private static func launchedAsLoginItem() -> Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent,
+              event.eventClass == AEEventClass(kCoreEventClass),
+              event.eventID == AEEventID(kAEOpenApplication),
+              let propData = event.paramDescriptor(forKeyword: AEKeyword(keyAEPropData)) else {
+            return false
+        }
+        return propData.enumCodeValue == OSType(keyAELaunchedAsLogInItem)
     }
 
     /// Relaunching the app (e.g. from Finder) while it is running with no
