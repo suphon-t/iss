@@ -453,9 +453,14 @@ final class SpaceSwitcher {
         companion.post(tap: .cgSessionEventTap)
     }
 
+    // Return conventions: the same event goes back unretained (the system
+    // only releases the result when it is a different object), a newly
+    // created event goes back retained. Returning the same event retained
+    // leaks one CGEvent per gesture packet, which adds up to gigabytes over
+    // days of trackpad use.
     private static let tapCallback: CGEventTapCallBack = { _, type, event, userInfo in
         guard let userInfo else {
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         let instance = Unmanaged<SpaceSwitcher>.fromOpaque(userInfo).takeUnretainedValue()
@@ -467,7 +472,7 @@ final class SpaceSwitcher {
             if let tap {
                 CGEvent.tapEnable(tap: tap, enable: true)
             }
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         let eventType = event.getIntegerValueField(kCGSEventTypeField)
@@ -475,7 +480,7 @@ final class SpaceSwitcher {
         if passthrough > 0 && (eventType == kCGSEventDockControl || eventType == kCGSEventGesture) {
             passthrough -= 1
             switcherLog.debug("passthrough event eventType=\(eventType) remaining=\(self.passthrough)")
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         if eventType == kCGSEventDockControl,
@@ -491,14 +496,14 @@ final class SpaceSwitcher {
             if phase == kGestureBegan {
                 swipeTracking = true
                 swipeFired = false
-                return Unmanaged.passRetained(event)
+                return Unmanaged.passUnretained(event)
             }
 
             if phase == kGestureChanged {
                 if swipeFired {
                     return nil
                 }
-                return Unmanaged.passRetained(event)
+                return Unmanaged.passUnretained(event)
             }
 
             if phase == kGestureEnded {
@@ -527,7 +532,7 @@ final class SpaceSwitcher {
             return nil
         }
 
-        return Unmanaged.passRetained(event)
+        return Unmanaged.passUnretained(event)
     }
 
     // macOS 27 flow. Same shape as the pre-27 flow: the real Began/Changed
@@ -540,14 +545,14 @@ final class SpaceSwitcher {
         if phase == kGestureBegan {
             swipeTracking = true
             swipeFired = false
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         if phase == kGestureChanged {
             if swipeFired {
                 return nil
             }
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         if phase == kGestureEnded {
@@ -573,12 +578,12 @@ final class SpaceSwitcher {
                 switcherLog.error("could not rewrite real End; falling back to native switch")
             }
             // At an edge, let the Dock finish its own rubber-band return.
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         // Cancelled (or unknown phase): let the Dock wind down natively.
         swipeTracking = false
-        return Unmanaged.passRetained(event)
+        return Unmanaged.passUnretained(event)
     }
 }
 
